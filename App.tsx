@@ -1,118 +1,106 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+import { View, Text, SafeAreaView, ImageBackground, FlatList } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import styles from './components/styles';
+import LottieView from 'lottie-react-native';
+import ForecastItem from './components/weatherforecast';
+import dayjs from 'dayjs';
+import useWeather from './components/weatherservice';
+import { StatusBar } from 'expo-status-bar';
+export default function App() {
+ 
+  const { city, weather,forecast, isLoading } = useWeather();
+  const WeatherBackgroundSource = require('./assets/background/sunnybackground.jpg')
+  const currentDate = dayjs();
+  
+  // Calcular los próximos cinco días
+  const getNextFiveDays = () => {
+    const nextFiveDays = [];
+    for (let i = 1; i <= 5; i++) {
+      const nextDay = currentDate.add(i, 'day').startOf('day');
+      nextFiveDays.push(nextDay);
+    }
+    return nextFiveDays;
   };
 
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+  const nextFiveDays = getNextFiveDays();
+  const weatherImageSource = weather && weather.weather && weather.weather[0]
+  ? weather.weather[0].main === 'Clear'
+    ? require('./assets/weatherconditions/sunny.json')
+    : weather.weather[0].main === 'Rain'
+    ? require('./assets/weatherconditions/rainy.json')
+    : weather.weather[0].main === 'Clouds'
+    ? require('./assets/weatherconditions/clouds.json')
+    : weather.weather[0].main === 'Snow'
+    ? require('./assets/weatherconditions/snowy.json')
+    : weather.weather[0].main === 'Storm'
+    ? require('./assets/weatherconditions/storm.json')
+    : require('./assets/weatherconditions/default.json') 
+  : require('./assets/weatherconditions/default.json') ;
+
+  if (isLoading) {
+    return (
+      <SafeAreaView  style={styles.loader}>
+        <LinearGradient
+        colors={['#22c1c3','#fdbb2d']}
+        style={styles.background}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
+        <LottieView source={require('./assets/loader/loader.json')} autoPlay loop style={styles.loader_animation} /> 
+       <Text style={styles.loader_text}>Cargando datos del clima...</Text>
+    
+      </SafeAreaView>
+      
+    );
+  }
+ else{
+  return (
+    <ImageBackground source={WeatherBackgroundSource} style={styles.img_weather}>
+    <View style={styles.overlay}/>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <LottieView
+          source={weatherImageSource}
+          autoPlay
+          loop
           style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+            width: 200,
+            aspectRatio: 1,
+      
+          }}
+        />
+        <Text style={styles.title}>{city}</Text>
+          <Text style={styles.tempText}>{Math.round(weather?.main.temp?? 0)}°</Text>
+          <Text style={styles.title}>{weather?.weather[0].main}</Text>
+      </View>
+
+  
+     <FlatList
+  data={nextFiveDays}
+  horizontal
+  showsHorizontalScrollIndicator ={false}
+  style={{
+    flexGrow: 0,
+    height: 100,
+    marginBottom: 40,
+  }}
+  contentContainerStyle={{
+    gap: 10,
+    paddingHorizontal: 10,
+  }}
+  renderItem={({ item }) => (
+    <ForecastItem
+      key={item.toString()} 
+      date={item}
+      forecastdata={forecast || []} 
+    />
+  )}
+  keyExtractor={(item, index) => index.toString()}
+/>
+<StatusBar style="light" />
+  </ImageBackground>
   );
+ 
+
+  }
+
+  
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
-
-export default App;

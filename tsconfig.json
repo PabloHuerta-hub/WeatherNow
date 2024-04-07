@@ -1,3 +1,14 @@
 {
-  "extends": "@react-native/typescript-config/tsconfig.json"
+  "extends": "@react-native/typescript-config/tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react",
+    "strict": true,
+    "esModuleInterop": true,
+    "module": "ES2015",
+    "noImplicitAny": true,
+    "typeRoots": ["./types", "../node_modules/@types","./node_modules"],
+  },
+  "exclude": ["./node_modules"
+  ],
+
 }
