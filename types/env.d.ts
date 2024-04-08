@@ -80,5 +80,5 @@ interface ForecastModalProps {
   visible: boolean;
   onClose: () => void;
   forecast: WeatherForecast[];
-  selectedDate?: Dayjs; // Hacer selectedDate opcional
+  selectedDate?: Dayjs; 
 }
