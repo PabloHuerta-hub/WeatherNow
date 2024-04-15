@@ -43,7 +43,9 @@ yarn ios
 ```
 
 
+## Credits for the asset
 
+Background image taken from [this site](https://www.pxfuel.com/es/desktop-wallpaper-htoep) 
 
 
 
